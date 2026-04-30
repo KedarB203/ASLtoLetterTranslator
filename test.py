@@ -11,6 +11,12 @@ from cvzone.HandTrackingModule import HandDetector
 #from cvzone.ClassificationModule import Classifier
 import numpy as np
 import math
+from tensorflow.keras.layers import DepthwiseConv2D
+
+def depthwise_compat(*args, **kwargs):
+    # Remove 'groups' if it exists (legacy models)
+    kwargs.pop('groups', None)
+    return DepthwiseConv2D(*args, **kwargs)
 
 class Classifier:
     """
@@ -22,7 +28,10 @@ class Classifier:
         np.set_printoptions(suppress=True)  # Disable scientific notation for clarity
 
         # Load the Keras model
-        self.model = tf.keras.models.load_model(self.model_path)
+        self.model = tf.keras.models.load_model(
+            self.model_path,
+            custom_objects={'DepthwiseConv2D': depthwise_compat}
+        )
 
         # Create a NumPy array with the right shape to feed into the Keras model
         self.data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
@@ -71,7 +80,7 @@ class Classifier:
 
 cap = cv2.VideoCapture(0)
 detector = HandDetector(maxHands=1)
-classifier = Classifier('/Users/kedarbulusu/PycharmProjects/PythonProject/Model/keras_model.h5', '/Users/kedarbulusu/PycharmProjects/PythonProject/Model/labels.txt')
+classifier = Classifier('/Users/kedarbulusu/personalFiles/ASLtoText/Model/keras_model.h5', '/Users/kedarbulusu/personalFiles/ASLtoText/Model/labels.txt')
 
 
 offset = 20
